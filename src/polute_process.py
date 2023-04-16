@@ -235,7 +235,7 @@ class PoluteProcessInspector:
         return temp_matrix, places
 
 
-def main():
+def predict(len: int=10, skip: int=10) -> None:
     area_size = np.array([1, 1])
     # partion = 4, 4
     partion = 20, 20
@@ -257,9 +257,14 @@ def main():
 
     John.plot_curent_table()
     
-    for i in range(8):
-        John.create_next_table_non_clear_scheme()
+    for i in range(len):
+        for s in range(skip):
+            John.create_next_table_non_clear_scheme()
+
         John.plot_curent_table()
+
+def main():
+    predict(len=10, skip=10)
 
 if __name__ == "__main__":
     main()
