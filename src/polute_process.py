@@ -170,7 +170,7 @@ class PoluteProcessInspector:
                 b[cur_line] = l_val * self.dt * ((ct[i-1, j] - 2*ct[i, j] + ct[i+1, j])/(self.dx * self.dx)\
                     + (ct[i, j-1] - 2*ct[i, j] + ct[i, j+1])/(self.dy * self.dy)) + ct[i, j]
                 
-                A[cur_line, iof(i=i, j=j)] = 2 + 2 * (1 - l_val) * self.dt * (self.k_1/pow(self.dx, 2) + self.k_1/pow(self.dy, 2))
+                A[cur_line, iof(i=i, j=j)] = 1 + 2 * (1 - l_val) * self.dt * (self.k_1/pow(self.dx, 2) + self.k_1/pow(self.dy, 2))
                 A[cur_line, iof(i=i-1, j=j)] = (1 - l_val) * self.k_1 * self.dt / pow(self.dx, 2)
                 A[cur_line, iof(i=i+1, j=j)] = A[cur_line, iof(i=i-1, j=j)]
                 A[cur_line, iof(i=i, j=j-1)] = (1 - l_val) * self.k_2 * self.dt / pow(self.dy, 2)
