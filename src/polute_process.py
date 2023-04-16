@@ -96,7 +96,9 @@ class PoluteProcessInspector:
         A, b = self._create_diff_system()
         X = self._solve_equation(A, b)
 
-        self.current_table = np.reshape(X, self.partion)
+        X = np.absolute(X)
+
+        self.current_table = self.current_table + np.reshape(X, self.partion)
 
     def create_next_table_clear_scheme(self) -> None:
         """Creates table on the next time point
@@ -127,7 +129,8 @@ class PoluteProcessInspector:
     def plot_table(self, table: np.ndarray) -> None:
         """Plot gieven table
         """
-        fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+        ax = plt.figure().add_subplot(projection='3d')
+        # fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
         # Make data.
         X = np.arange(0, self.partion[0], 1)
@@ -136,8 +139,17 @@ class PoluteProcessInspector:
         Z = table
 
         # Plot the surface.
-        surf = ax.plot_surface(X, Y, Z,
-                            linewidth=0, antialiased=False)
+        surf = ax.plot_surface(X, Y, Z, linewidth=0)
+
+        # Plot projections of the contours for each dimension.  By choosing offsets
+        # that match the appropriate axes limits, the projected contours will sit on
+        # the 'walls' of the graph.
+        # ax.contour(X, Y, Z, zdir='z', offset=-100, cmap='coolwarm')
+        # ax.contour(X, Y, Z, zdir='x', offset=-40, cmap='coolwarm')
+        # ax.contour(X, Y, Z, zdir='y', offset=40, cmap='coolwarm')
+
+        # ax.set(xlim=(0, 20), ylim=(0, 20), zlim=(-10, 10),
+        #     xlabel='X', ylabel='Y', zlabel='Z')
 
         plt.show()
 
@@ -168,9 +180,10 @@ class PoluteProcessInspector:
                 cur_line = iof(i=i, j=j)
                 
                 b[cur_line] = l_val * self.dt * ((ct[i-1, j] - 2*ct[i, j] + ct[i+1, j])/(self.dx * self.dx)\
-                    + (ct[i, j-1] - 2*ct[i, j] + ct[i, j+1])/(self.dy * self.dy)) + ct[i, j]
-                
-                A[cur_line, iof(i=i, j=j)] = 1 + 2 * (1 - l_val) * self.dt * (self.k_1/pow(self.dx, 2) + self.k_1/pow(self.dy, 2))
+                    + (ct[i, j-1] - 2*ct[i, j] + ct[i, j+1])/(self.dy * self.dy))\
+                    + ct[i, j] + ct[i, j] * self.drain_ch(ct[i, j]) * self.dt + self.sourse * self.dt
+
+                A[cur_line, iof(i=i, j=j)] = 1 + self.drain_ch(ct[i, j]) * self.dt + 2 * (1 - l_val) * self.dt * (self.k_1/pow(self.dx, 2) + self.k_1/pow(self.dy, 2))
                 A[cur_line, iof(i=i-1, j=j)] = (1 - l_val) * self.k_1 * self.dt / pow(self.dx, 2)
                 A[cur_line, iof(i=i+1, j=j)] = A[cur_line, iof(i=i-1, j=j)]
                 A[cur_line, iof(i=i, j=j-1)] = (1 - l_val) * self.k_2 * self.dt / pow(self.dy, 2)
@@ -226,8 +239,8 @@ def main():
     area_size = np.array([1, 1])
     # partion = 4, 4
     partion = 20, 20
-    k_1 = 1
-    k_2 = 1
+    k_1 = 10
+    k_2 = 10
     u_cr = 12
     drain_characteristic = get_drain_characteristic_function(u_critical=u_cr)
     sourse = 5
@@ -244,8 +257,8 @@ def main():
 
     John.plot_curent_table()
     
-    for i in range(4):
-        John.create_next_table_clear_scheme()
+    for i in range(8):
+        John.create_next_table_non_clear_scheme()
         John.plot_curent_table()
 
 if __name__ == "__main__":
