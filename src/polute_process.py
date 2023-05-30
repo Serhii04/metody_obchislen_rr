@@ -90,11 +90,9 @@ class PoluteProcessInspector:
     """Class that provides functionality of predicting
     future state of my predefined process
     """
-    # TODO: border_val and start_value not supported now
     def __init__(self, area_size: np.ndarray, partion: list,
                  k_1: float, k_2: float,
                  drain_characteristic, sourse: float,
-                 #  border_val: int=0, start_value: int=0,
                  dt: float=None,
                 ):
         self.area_size = area_size
@@ -113,10 +111,6 @@ class PoluteProcessInspector:
         self.sourse_points = []
 
         self._build_table()
-
-        # # TODO: that part might be in the solvation function
-        # self._tables = list()
-        # self._tables.append(self.current_table())
 
     def append_sourse_point(self, x: int, y: int) -> None:
         self.sourse_points.append((x, y))
@@ -183,39 +177,14 @@ class PoluteProcessInspector:
 
     def create_next_table_non_clear_scheme(self) -> None:
         A, b = self._create_diff_system()
-        # self.print_table_bitvise(table=A)
         X = self._solve_equation(A, b)
 
         X = np.reshape(X, self.partion)
 
         self.sourse_action(X)
 
-        # self.print_table_bitvise(X)
-
-        # for p in self.sourse_points:
-        #     X[p[0], p[1]] += self.sourse * self.dt
-
         self.current_table = X
 
-    def create_next_table_clear_scheme(self) -> None:
-        """Creates table on the next time point
-        where clear scheme is used
-        """
-        temp_table = self._get_start_table()
-        
-        for i in range(1, self.partion[0]-1):
-            for j in range(1, self.partion[1]-1):
-                temp_table[i, j] = (1 - self.k_1 * 2 * self.dt / pow(self.dx, 2) - self.k_2 * 2 * self.dt / pow(self.dy, 2)) * self.current_table[i, j]\
-                    + self.k_1 * self.dt / pow(self.dx, 2) * (self.current_table[i+1, j] + self.current_table[i-1, j])\
-                    + self.k_2 * self.dt / pow(self.dy, 2) * (self.current_table[i, j+1] + self.current_table[i, j-1])\
-                    # - 1 / (2) * (self.current_table[i+1, j] * self.drain_ch(self.current_table[i+1, j]) - self.current_table[i-1, j] * self.drain_ch(self.current_table[i-1, j]))\
-                    # - 1 / (2) * (self.current_table[i, j+1] * self.drain_ch(self.current_table[i, j+1]) - self.current_table[i, j-1] * self.drain_ch(self.current_table[i, j-1]))\
-                    # + 0
-
-        for p in self.sourse_points:
-            temp_table[p[0], p[1]] += self.sourse * self.dt
-
-        self.current_table = np.abs(temp_table)
 
     def print_curent_table(self) -> None:
         """Print curent table in the console
@@ -223,7 +192,6 @@ class PoluteProcessInspector:
         print("")
         for l in self.current_table:
             print(l)
-        # print(self.current_table)
 
     def plot_curent_table(self) -> None:
         """Plot curent table
@@ -245,7 +213,6 @@ class PoluteProcessInspector:
         
         ax = plt.figure(figsize=(7,6)).add_subplot(projection='3d')
 
-        # Plot the 3D surface
         ax.plot_surface(X, Y, Z, edgecolor='royalblue', alpha=0.3)
 
         ax.set(xlim=(-2, self.partion[0] + 2), ylim=(-2, self.partion[1] + 2), zlim=(-2, 17),
@@ -262,8 +229,6 @@ class PoluteProcessInspector:
         Y = np.arange(0, self.partion[1], 1)
         X, Y = np.meshgrid(X, Y)
         Z = table
-        
-        # fig, ax = plt.subplots()
 
         plt.figure(figsize=(7,6))
         plt.contourf(X, Y, Z)
@@ -274,8 +239,6 @@ class PoluteProcessInspector:
     def plot_table_double(self, table: np.ndarray) -> None:
         """Plot gieven table
         """
-        # plt.style.use('_mpl-gallery-nogrid')
-
         X = np.arange(0, self.partion[0], 1)
         Y = np.arange(0, self.partion[1], 1)
         X, Y = np.meshgrid(X, Y)
@@ -286,13 +249,11 @@ class PoluteProcessInspector:
         # First subplot
         ax = fig.add_subplot(1, 2, 1)
 
-        # plot a 3D surface like in the example mplot3d/surface3d_demo
         surf = ax.contourf(X, Y, Z, linewidth=0, antialiased=False)
         fig.colorbar(surf, shrink=0.5, aspect=10)
 
         # Second subplot
         ax = fig.add_subplot(1, 2, 2, projection='3d')
-        # ax.plot_wireframe(X, Y, Z, rstride=10, cstride=10)
         
         ax.plot_surface(X, Y, Z, edgecolor='royalblue', alpha=0.3)
         ax.set(xlim=(-2, self.partion[0] + 2), ylim=(-2, self.partion[1] + 2), zlim=(-2, 17),
@@ -338,32 +299,6 @@ class PoluteProcessInspector:
                 A[cur_line, self.partion[1] * (y+1) + (x)] = self.k_2 * (l_val - 1) * self.dt / pow(self.dy, 2)
                 A[cur_line, self.partion[1] * (y-1) + (x)] = self.k_2 * (l_val - 1) * self.dt / pow(self.dy, 2)
 
-        # print("A")
-        # for l in A:
-        #     print("")
-        #     for i in range(self.partion[0]):
-        #         print(l[i * self.partion[0]: i * self.partion[0] + self.partion[0]])
-
-
-
-        # Fill central elements
-        # i is Oy partion, j is Ox partion
-        # for i in range(1, self.partion[0] - 1):
-        #     for j in range(1, self.partion[1] - 1):
-        #         cur_line = iof(c=i, l=j)
-                
-        #         b[cur_line] = l_val * self.dt * (\
-        #               (ct[i-1, j] - 2 * ct[i, j] + ct[i+1, j]) / (pow(self.dx, 2))\
-        #             + (ct[i, j-1] - 2 * ct[i, j] + ct[i, j+1]) / (pow(self.dy, 2))\
-        #             ) + ct[i, j] + ct[i, j] * self.drain_ch(ct[i, j]) * self.dt
-
-        #         A[cur_line, iof(c=i, l=j)] = 1 + self.drain_ch(ct[i, j]) * self.dt\
-        #               + 2 * (1 - l_val) * self.dt * (self.k_1 / pow(self.dx, 2) + self.k_1 / pow(self.dy, 2))
-        #         A[cur_line, iof(c=i-1, l=j)] = - (1 - l_val) * self.k_1 * self.dt / pow(self.dx, 2)
-        #         A[cur_line, iof(c=i+1, l=j)] = A[cur_line, iof(c=i-1, l=j)]
-        #         A[cur_line, iof(c=i, l=j-1)] = - (1 - l_val) * self.k_2 * self.dt / pow(self.dy, 2)
-        #         A[cur_line, iof(c=i, l=j+1)] = A[cur_line, iof(c=i, l=j-1)]
-
         return A, b
 
     def _solve_equation(self, A: np.ndarray, b: np.ndarray) -> np.ndarray:
@@ -376,17 +311,12 @@ class PoluteProcessInspector:
 
     
 
-    
-
-
 def predict(len: int=10, skip: int=10) -> None:
-    area_size = np.array([1000, 1000])  # works up to 10
-    # partion = 20, 20
-    partion = 30, 30
+    area_size = np.array([1000, 1000])
+    partion = 20, 20
     k_1 = 10
     k_2 = 10
     dt = 1
-    # dt = None
     u_cr = 12
     drain_characteristic = get_drain_characteristic_function(u_critical=u_cr)
     sourse = 5 / 60
@@ -396,23 +326,20 @@ def predict(len: int=10, skip: int=10) -> None:
     
     John.append_sourse_point(x=15, y=15)
     John.append_sourse_point(x=11, y=11)
-    # John.sourse_action()
     
     John.print_info()
 
     John.create_next_table_non_clear_scheme()
     John.plot_curent_table()
-    # John.print_curent_table()
     
     for i in range(len):
         for s in tqdm(range(skip)):
             John.create_next_table_non_clear_scheme()
 
         John.plot_curent_table()
-        # John.print_curent_table()
 
 def main():
-    predict(len=20, skip=600)
+    predict(len=6, skip=600)
 
 if __name__ == "__main__":
     main()
