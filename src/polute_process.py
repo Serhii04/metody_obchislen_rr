@@ -287,8 +287,7 @@ class PoluteProcessInspector:
         ax = fig.add_subplot(1, 2, 1)
 
         # plot a 3D surface like in the example mplot3d/surface3d_demo
-        surf = ax.contourf(X, Y, Z, rstride=1, cstride=1, cmap=cm.coolwarm,
-                            linewidth=0, antialiased=False)
+        surf = ax.contourf(X, Y, Z, linewidth=0, antialiased=False)
         fig.colorbar(surf, shrink=0.5, aspect=10)
 
         # Second subplot
@@ -382,8 +381,8 @@ class PoluteProcessInspector:
 
 def predict(len: int=10, skip: int=10) -> None:
     area_size = np.array([1000, 1000])  # works up to 10
-    partion = 20, 20
-    # partion = 30, 30
+    # partion = 20, 20
+    partion = 30, 30
     k_1 = 10
     k_2 = 10
     dt = 1
