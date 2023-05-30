@@ -219,8 +219,8 @@ class PoluteProcessInspector:
         self.plot_table(self.current_table)
 
     def plot_table(self, table: np.ndarray) -> None:
-        # self.plot_table_lined_graph(table)
         self.plot_table_warm_map(table)
+        self.plot_table_lined_graph(table)
 
     def plot_table_lined_graph(self, table: np.ndarray) -> None:
         """Plot gieven table
@@ -302,8 +302,8 @@ class PoluteProcessInspector:
     def _solve_equation(self, A: np.ndarray, b: np.ndarray) -> np.ndarray:
         """If X that AX = b exists, then return X
         """
-        # X = np.linalg.solve(A, b)  // TODO: delete someones code
-        X = gaus(A=A, b=b)
+        X = np.linalg.solve(A, b)  # TODO: delete someones code
+        # X = gaus(A=A, b=b)
         
         return X
 
@@ -314,8 +314,8 @@ class PoluteProcessInspector:
 
 def predict(len: int=10, skip: int=10) -> None:
     area_size = np.array([50, 50])  # works up to 10
-    partion = 20, 20
-    # partion = 30, 30
+    # partion = 20, 20
+    partion = 30, 30
     k_1 = 10
     k_2 = 10
     u_cr = 12
