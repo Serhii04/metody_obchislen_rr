@@ -339,7 +339,7 @@ def predict(len: int=10, skip: int=10) -> None:
         John.plot_curent_table()
 
 def main():
-    predict(len=20, skip=600)
+    predict(len=6, skip=600)
 
 if __name__ == "__main__":
     main()
